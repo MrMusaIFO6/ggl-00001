@@ -1,1 +1,76 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Islamic Search App</title>
+<style>
+  /* Basic Reset */
+  *{margin:0; padding:0; box-sizing:border-box;}
+  body{font-family:'Segoe UI', sans-serif; background:#f5f5f5;}
+  
+  /* Navbar */
+  header{background:#1a73e8; color:white; padding:20px; text-align:center; font-size:28px;}
 
+  /* Search Box */
+  #searchBox{display:block; margin:20px auto; width:80%; padding:12px 15px; font-size:18px; border-radius:25px; border:1px solid #ccc; outline:none;}
+  #searchBox:focus{border-color:#1a73e8;}
+
+  /* Results Container */
+  #results{padding:20px; display:flex; flex-direction:column; align-items:center;}
+
+  .result-card{width:90%; max-width:700px; background:white; margin:10px 0; padding:15px; border-radius:10px; box-shadow:0 4px 6px rgba(0,0,0,0.1); cursor:pointer; transition:transform 0.2s;}
+  .result-card:hover{transform:scale(1.02);}
+  .result-title{font-size:18px; color:#1a73e8; font-weight:bold;}
+  .result-snippet{font-size:15px; color:#333; margin-top:5px;}
+  .result-url{font-size:14px; color:#555; margin-top:5px;}
+</style>
+</head>
+<body>
+
+<header>Islamic Search</header>
+<input type="text" id="searchBox" placeholder="Search Islamic content..." />
+<div id="results"></div>
+
+<script>
+const resultsContainer = document.getElementById('results');
+const searchBox = document.getElementById('searchBox');
+
+// Backend API URL (mobile deploy-compatible, GitHub-ready)
+const BACKEND_API = 'https://your-backend-url/search?q=';
+
+searchBox.addEventListener('keypress', async (e)=>{
+  if(e.key === 'Enter'){
+    const query = encodeURIComponent(searchBox.value);
+    resultsContainer.innerHTML = '<p>Loading...</p>';
+    try{
+      const res = await fetch(BACKEND_API + query);
+      const data = await res.json();
+      resultsContainer.innerHTML = '';
+
+      // Loop through results and display
+      data.items.forEach(item=>{
+        const card = document.createElement('div');
+        card.className = 'result-card';
+        const title = item.snippet.title;
+        const snippet = item.snippet.snippet;
+        const link = item.link || item.snippet.link || '#';
+        card.innerHTML = `
+          <div class="result-title">${title}</div>
+          <div class="result-snippet">${snippet}</div>
+          <div class="result-url">${link}</div>
+        `;
+        card.onclick = ()=> window.open(link, '_blank');
+        resultsContainer.appendChild(card);
+      });
+
+    }catch(err){
+      resultsContainer.innerHTML = '<p>Error fetching results</p>';
+      console.error(err);
+    }
+  }
+});
+</script>
+
+</body>
+</html>
